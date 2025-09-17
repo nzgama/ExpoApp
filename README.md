@@ -2,7 +2,7 @@
 
 ## Descripción General
 
-**ExpoApp** es una aplicación móvil desarrollada con React Native y Expo, que implementa autenticación de usuarios, navegación entre pantallas y gestión de perfiles usando Firebase como backend. El objetivo es que los estudiantes aprendan buenas prácticas de desarrollo móvil, manejo de estado global, navegación y conexión con servicios externos.
+**ExpoApp** es una aplicación móvil desarrollada con React Native y Expo, que implementa autenticación de usuarios, navegación entre pantallas, gestión de perfiles y notas usando Firebase como backend. El objetivo es que los estudiantes aprendan buenas prácticas de desarrollo móvil, manejo de estado global, navegación y conexión con servicios externos.
 
 ---
 
@@ -21,10 +21,11 @@
   - `ProfileScreen.js`: Edición y visualización del perfil del usuario.
   - `SettingsScreen.js`: Pantalla de ajustes y logout.
   - `PantallaInicio.js`: Ejemplo de pantalla de inicio.
+  - `NotesScreen.js`: Gestión de notas personales (crear, listar, marcar como completadas, eliminar y elegir color).
   
 - **router/**  
   - `AppNavigator.js`: Controla la navegación principal según el estado de autenticación.
-  - `TabsNavigator.js`: Navegación por pestañas entre Home, Perfil y Ajustes.
+  - `TabsNavigator.js`: Navegación por pestañas entre Home, Perfil, Ajustes y Notas.
 
 - **auth/**  
   - `AuthContext.js`: Contexto global para autenticación.
@@ -52,7 +53,7 @@
 
 1. El usuario se registra o inicia sesión en `LoginScreen.js`.
 2. El UID del usuario se guarda en SecureStore y se actualiza el estado global de autenticación.
-3. Si el usuario está autenticado, accede a las pantallas principales (Home, Perfil, Ajustes).
+3. Si el usuario está autenticado, accede a las pantallas principales (Home, Perfil, Ajustes, Notas).
 4. Puede cerrar sesión desde `SettingsScreen.js`, lo que borra el token y lo regresa al login.
 
 ---
@@ -67,6 +68,18 @@
 
 ---
 
+## Gestión de Notas
+
+- En `NotesScreen.js`, el usuario puede:
+  - Crear una nota con título, contenido y color.
+  - Listar todas sus notas guardadas en Firebase.
+  - Marcar una nota como completada o desmarcarla.
+  - Eliminar una nota.
+  - Visualizar el color de cada nota y elegirlo al crearla.
+- Todo el código está comentado para que los estudiantes comprendan el flujo CRUD y la integración con Firestore.
+
+---
+
 ## Contexto y Hooks
 
 - **AuthContext**: Permite compartir el estado de autenticación en toda la app.
@@ -77,7 +90,7 @@
 ## Navegación
 
 - **AppNavigator**: Decide si mostrar el login o las pantallas principales según el estado de autenticación.
-- **TabsNavigator**: Permite navegar entre Home, Perfil y Ajustes usando pestañas.
+- **TabsNavigator**: Permite navegar entre Home, Perfil, Ajustes y Notas usando pestañas.
 
 ---
 
