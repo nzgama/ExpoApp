@@ -18,10 +18,10 @@
   Carpeta con las pantallas principales:
   - `HomeScreen.js`: Pantalla de bienvenida.
   - `LoginScreen.js`: Pantalla de login y registro.
-  - `ProfileScreen.js`: Edición y visualización del perfil del usuario.
+  - `ProfileScreen.js`: Edición y visualización del perfil del usuario, con validaciones y botón de guardar habilitado solo si hay cambios.
   - `SettingsScreen.js`: Pantalla de ajustes y logout.
   - `PantallaInicio.js`: Ejemplo de pantalla de inicio.
-  - `NotesScreen.js`: Gestión de notas personales (crear, listar, marcar como completadas, eliminar y elegir color).
+  - `NotesScreen.js`: Gestión de notas personales (crear, listar, con validaciones y botón de guardar habilitado solo si hay cambios).
   
 - **router/**  
   - `AppNavigator.js`: Controla la navegación principal según el estado de autenticación.
@@ -62,7 +62,7 @@
 
 - En `ProfileScreen.js`, el usuario puede:
   - Ver y editar su nombre, apellido, edad y descripción.
-  - Guardar cambios (se actualiza solo lo modificado en Firestore).
+  - Guardar cambios (solo si hay cambios respecto al estado inicial, con validaciones básicas).
   - Borrar su perfil (elimina el documento en Firestore).
 - El formulario muestra mensajes de éxito o error y está comentado para facilitar el aprendizaje.
 
@@ -71,12 +71,23 @@
 ## Gestión de Notas
 
 - En `NotesScreen.js`, el usuario puede:
-  - Crear una nota con título, contenido y color.
+  - Crear una nota con título, contenido y fecha de creación.
+  - Guardar la nota solo si hay cambios respecto al estado inicial y si los datos son válidos.
   - Listar todas sus notas guardadas en Firebase.
-  - Marcar una nota como completada o desmarcarla.
-  - Eliminar una nota.
-  - Visualizar el color de cada nota y elegirlo al crearla.
+  - Visualizar la fecha de cada nota.
 - Todo el código está comentado para que los estudiantes comprendan el flujo CRUD y la integración con Firestore.
+
+### Ejemplo básico para agregar una nota
+
+1. Escribe un título y un contenido en los campos correspondientes.
+2. Presiona el botón **Guardar Nota** (solo estará habilitado si hay cambios).
+3. La nota aparecerá en la lista de abajo y se guardará automáticamente en Firebase.
+
+> **Ejemplo visual:**
+>
+> - Título: `Comprar frutas`
+> - Contenido: `Manzanas, naranjas y bananas.`
+> - [Botón] Guardar Nota
 
 ---
 
@@ -120,5 +131,3 @@
 4. Ejecuta la app con `npm start` o `expo start`.
 
 ---
-
-¿Dudas? ¡Consulta los comentarios en el código o pregunta a tu docente!
