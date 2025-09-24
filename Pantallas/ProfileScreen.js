@@ -5,43 +5,34 @@ import { db } from '../config/Firebase';
 import * as SecureStore from 'expo-secure-store';
 
 /**
- * Guarda o actualiza el perfil del usuario en Firestore.
- * Si el documento existe, actualiza solo los campos modificados.
- * Si no existe, lo crea con los datos proporcionados.
- */
-const guardarPerfil = async (uid, datos) => {
-    const docRef = doc(db, 'usuarios', uid);
-    try {
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            await updateDoc(docRef, datos); // Actualiza solo los campos modificados
-        } else {
-            await setDoc(docRef, datos); // Crea el documento si no existe
-        }
-    } catch (error) {
-        throw error;
-    }
-};
-
-/**
- * Pantalla de perfil de usuario.
- * Permite editar, guardar y borrar los datos del perfil en Firestore.
+ * Pantalla de perfil de usuario con estado único para el formulario y validaciones básicas.
  */
 export default function ProfileScreen() {
-    // Estados para los campos del perfil
-    const [nombre, setNombre] = useState('');
-    const [apellido, setApellido] = useState('');
-    const [edad, setEdad] = useState('');
-    const [descripcion, setDescripcion] = useState('');
+    // Estado único para todos los campos del formulario
+    const [form, setForm] = useState({
+        nombre: '',
+        apellido: '',
+        edad: '',
+        descripcion: '',
+    });
+    // Estado para guardar el formulario inicial
+    const [formInicial, setFormInicial] = useState({
+        nombre: '',
+        apellido: '',
+        edad: '',
+        descripcion: '',
+    });
     // Estado para mostrar si está cargando los datos
     const [loading, setLoading] = useState(true);
     // Estado para mostrar mensajes de éxito o error
     const [mensaje, setMensaje] = useState('');
     // Estado para saber si el perfil existe en la base de datos
     const [perfilExiste, setPerfilExiste] = useState(false);
+    // Estado para errores de validación
+    const [errores, setErrores] = useState({});
 
     /**
-     * Obtiene los datos del perfil desde Firestore y los carga en los inputs.
+     * Obtiene los datos del perfil desde Firestore y los carga en el formulario.
      */
     const obtenerPerfil = async () => {
         const uid = await SecureStore.getItemAsync('userToken');
@@ -51,13 +42,18 @@ export default function ProfileScreen() {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const datos = docSnap.data();
-                setNombre(datos.nombre || '');
-                setApellido(datos.apellido || '');
-                setEdad(datos.edad || '');
-                setDescripcion(datos.descripcion || '');
+                const nuevoForm = {
+                    nombre: datos.nombre || '',
+                    apellido: datos.apellido || '',
+                    edad: datos.edad ? String(datos.edad) : '',
+                    descripcion: datos.descripcion || '',
+                };
+                setForm(nuevoForm);
+                setFormInicial(nuevoForm);
                 setPerfilExiste(true);
             } else {
                 setPerfilExiste(false);
+                setFormInicial({ nombre: '', apellido: '', edad: '', descripcion: '' });
             }
         } catch (error) {
             console.error('Error al obtener el perfil:', error);
@@ -74,10 +70,7 @@ export default function ProfileScreen() {
         if (!uid) return;
         try {
             await deleteDoc(doc(db, 'usuarios', uid));
-            setNombre('');
-            setApellido('');
-            setEdad('');
-            setDescripcion('');
+            setForm({ nombre: '', apellido: '', edad: '', descripcion: '' });
             setPerfilExiste(false);
             setMensaje('Perfil borrado exitosamente.');
         } catch (error) {
@@ -92,18 +85,52 @@ export default function ProfileScreen() {
     }, []);
 
     /**
+     * Validaciones básicas de los campos
+     */
+    const validarCampos = () => {
+        const nuevosErrores = {};
+        if (!form.nombre.trim()) nuevosErrores.nombre = 'El nombre es obligatorio.';
+        if (!form.apellido.trim()) nuevosErrores.apellido = 'El apellido es obligatorio.';
+        if (!form.edad.trim()) {
+            nuevosErrores.edad = 'La edad es obligatoria.';
+        } else if (isNaN(Number(form.edad)) || Number(form.edad) <= 0) {
+            nuevosErrores.edad = 'La edad debe ser un número mayor a 0.';
+        }
+        return nuevosErrores;
+    };
+
+    /**
      * Guarda los cambios realizados en el perfil.
      */
     const handleSave = async () => {
+        const erroresVal = validarCampos();
+        setErrores(erroresVal);
+        if (Object.keys(erroresVal).length > 0) return;
         const uid = await SecureStore.getItemAsync('userToken');
-        const datos = { nombre, apellido, edad, descripcion };
+        const datos = {
+            nombre: form.nombre,
+            apellido: form.apellido,
+            edad: Number(form.edad),
+            descripcion: form.descripcion,
+        };
         try {
-            await guardarPerfil(uid, datos);
+            const docRef = doc(db, 'usuarios', uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                await updateDoc(docRef, datos);
+            } else {
+                await setDoc(docRef, datos);
+            }
             setMensaje('¡Perfil guardado exitosamente!');
         } catch (error) {
             setMensaje('Error al guardar el perfil. Intenta nuevamente.');
         }
         setTimeout(() => setMensaje(''), 3000);
+    };
+
+    // Handler para actualizar el estado del formulario
+    const handleChange = (campo, valor) => {
+        setForm(prev => ({ ...prev, [campo]: valor }));
     };
 
     // Mostrar pantalla de carga mientras se obtienen los datos
@@ -115,48 +142,47 @@ export default function ProfileScreen() {
         );
     }
 
+    const hayCambios = JSON.stringify(form) !== JSON.stringify(formInicial);
+
     // Renderizar el formulario de perfil
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Edita tu perfil aquí</Text>
-            {/* Mensaje de éxito o error */}
             {mensaje ? (
                 <Text style={{ color: mensaje.includes('exitosamente') ? 'green' : 'red', marginBottom: 10 }}>{mensaje}</Text>
             ) : null}
-            {/* Input para nombre */}
             <TextInput
                 style={styles.input}
                 placeholder="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
+                value={form.nombre}
+                onChangeText={valor => handleChange('nombre', valor)}
             />
-            {/* Input para apellido */}
+            {errores.nombre && <Text style={styles.error}>{errores.nombre}</Text>}
             <TextInput
                 style={styles.input}
                 placeholder="Apellido"
-                value={apellido}
-                onChangeText={setApellido}
+                value={form.apellido}
+                onChangeText={valor => handleChange('apellido', valor)}
             />
-            {/* Input para edad */}
+            {errores.apellido && <Text style={styles.error}>{errores.apellido}</Text>}
             <TextInput
                 style={styles.input}
                 placeholder="Edad"
-                value={edad}
-                onChangeText={setEdad}
+                value={form.edad}
+                onChangeText={valor => handleChange('edad', valor)}
                 keyboardType="numeric"
             />
-            {/* Input para descripción */}
+            {errores.edad && <Text style={styles.error}>{errores.edad}</Text>}
             <TextInput
                 style={styles.input}
                 placeholder="Descripción"
-                value={descripcion}
-                onChangeText={setDescripcion}
+                value={form.descripcion}
+                onChangeText={valor => handleChange('descripcion', valor)}
                 multiline
             />
-            {/* Botones de acción */}
             <View style={styles.buttonContainer}>
                 <View style={styles.buttonWrapper}>
-                    <Button title="Guardar Cambios" onPress={handleSave} color="#007BFF" />
+                    <Button title="Guardar Cambios" color="#007BFF" onPress={handleSave} disabled={!hayCambios} />
                 </View>
                 {perfilExiste && (
                     <View style={styles.buttonWrapper}>
@@ -199,5 +225,11 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         flex: 1,
         marginHorizontal: 5,
+    },
+    error: {
+        color: 'red',
+        fontSize: 13,
+        marginBottom: 8,
+        alignSelf: 'flex-start',
     },
 });
