@@ -3,6 +3,7 @@ import HomeScreen from '../Pantallas/HomeScreen';
 import ProfileScreen from '../Pantallas/ProfileScreen';
 import SettingsScreen from '../Pantallas/SettingsScreen';
 import NotesScreen from '../Pantallas/NotesScreen';
+import FilesScreen from '../Pantallas/FilesScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -13,6 +14,7 @@ export default function TabsNavigator() {
             <Tab.Screen name="Profile" component={ProfileScreen} />
             <Tab.Screen name="Settings" component={SettingsScreen} />
             <Tab.Screen name="Notas" component={NotesScreen} />
+            <Tab.Screen name="Files" component={FilesScreen} />
         </Tab.Navigator>
     );
 }
