@@ -30,7 +30,8 @@
     "react-native-web": "^0.21.0",
     "expo-camera": "~17.0.8",
     "expo-file-system": "~19.0.15",
-    "expo-image-picker": "~17.0.8"
+    "expo-image-picker": "~17.0.8",
+    "expo-location": "~19.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
