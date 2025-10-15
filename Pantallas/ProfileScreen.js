@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/Firebase';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
 
 /**
  * Pantalla de perfil de usuario con estado único para el formulario, validaciones básicas y geolocalización.
@@ -39,6 +40,43 @@ export default function ProfileScreen() {
     const [watchingLocation, setWatchingLocation] = useState(false);
     // Estado para almacenar la suscripción de ubicación
     const [locationSubscription, setLocationSubscription] = useState(null);
+    // Estado para la región del mapa
+    const [region, setRegion] = useState(null);
+    /**
+     * Inicializar mapa con ubicación actual al cargar la pantalla
+     */
+    useEffect(() => {
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') return;
+
+            try {
+                const ubicacion = await Location.getCurrentPositionAsync({});
+                setRegion({
+                    latitude: ubicacion.coords.latitude,
+                    longitude: ubicacion.coords.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                });
+            } catch (error) {
+                console.error('Error al obtener ubicación inicial para el mapa:', error);
+            }
+        })();
+    }, []);
+
+    /**
+     * Actualizar región del mapa cuando cambien las coordenadas del formulario
+     */
+    useEffect(() => {
+        if (form.latitud && form.longitud) {
+            setRegion({
+                latitude: parseFloat(form.latitud),
+                longitude: parseFloat(form.longitud),
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            });
+        }
+    }, [form.latitud, form.longitud]);
 
     /**
      * Obtiene los datos del perfil desde Firestore y los carga en el formulario.
@@ -338,6 +376,28 @@ export default function ProfileScreen() {
                         </Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Mapa con marcador de ubicación */}
+                <View style={styles.mapContainer}>
+                    <Text style={styles.mapTitle}>🗺️ Mapa de ubicación</Text>
+                    {region ? (
+                        <MapView style={styles.map} region={region}>
+                            <Marker
+                                coordinate={{
+                                    latitude: region.latitude,
+                                    longitude: region.longitude
+                                }}
+                                title="Mi ubicación"
+                                description={`Lat: ${region.latitude.toFixed(6)}, Lon: ${region.longitude.toFixed(6)}`}
+                            />
+                        </MapView>
+                    ) : (
+                        <View style={styles.mapPlaceholder}>
+                            <ActivityIndicator size="large" color="#007BFF" />
+                            <Text style={styles.mapLoadingText}>Cargando mapa...</Text>
+                        </View>
+                    )}
+                </View>
             </View>
             <View style={styles.buttonContainer}>
                 <View style={styles.buttonWrapper}>
@@ -450,5 +510,38 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 14,
         fontWeight: '500',
+    },
+    mapContainer: {
+        width: '100%',
+        marginTop: 8,
+    },
+    mapTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 8,
+        textAlign: 'center',
+        color: '#495057',
+    },
+    map: {
+        width: '100%',
+        height: 300,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#dee2e6',
+    },
+    mapPlaceholder: {
+        width: '100%',
+        height: 300,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#dee2e6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    mapLoadingText: {
+        marginTop: 8,
+        color: '#6c757d',
+        fontSize: 14,
     },
 });
