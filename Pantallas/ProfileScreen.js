@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../config/Firebase';
 import * as SecureStore from 'expo-secure-store';
@@ -295,121 +295,123 @@ export default function ProfileScreen() {
 
     const hayCambios = JSON.stringify(form) !== JSON.stringify(formInicial);
 
-    // Renderizar el formulario de perfil
+    // Renderizar el formulario de perfil con ScrollView
     return (
-        <View style={styles.container}>
-            <Text style={styles.text}>Edita tu perfil aquí</Text>
-            {mensaje ? (
-                <Text style={{ color: mensaje.includes('exitosamente') ? 'green' : 'red', marginBottom: 10 }}>{mensaje}</Text>
-            ) : null}
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={form.nombre}
-                onChangeText={valor => handleChange('nombre', valor)}
-            />
-            {errores.nombre && <Text style={styles.error}>{errores.nombre}</Text>}
-            <TextInput
-                style={styles.input}
-                placeholder="Apellido"
-                value={form.apellido}
-                onChangeText={valor => handleChange('apellido', valor)}
-            />
-            {errores.apellido && <Text style={styles.error}>{errores.apellido}</Text>}
-            <TextInput
-                style={styles.input}
-                placeholder="Edad"
-                value={form.edad}
-                onChangeText={valor => handleChange('edad', valor)}
-                keyboardType="numeric"
-            />
-            {errores.edad && <Text style={styles.error}>{errores.edad}</Text>}
-            <TextInput
-                style={styles.input}
-                placeholder="Descripción"
-                value={form.descripcion}
-                onChangeText={valor => handleChange('descripcion', valor)}
-                multiline
-            />
+        <ScrollView >
+            <View style={styles.container}>
+                <Text style={styles.text}>Edita tu perfil aquí</Text>
+                {mensaje ? (
+                    <Text style={{ color: mensaje.includes('exitosamente') ? 'green' : 'red', marginBottom: 10 }}>{mensaje}</Text>
+                ) : null}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Nombre"
+                    value={form.nombre}
+                    onChangeText={valor => handleChange('nombre', valor)}
+                />
+                {errores.nombre && <Text style={styles.error}>{errores.nombre}</Text>}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Apellido"
+                    value={form.apellido}
+                    onChangeText={valor => handleChange('apellido', valor)}
+                />
+                {errores.apellido && <Text style={styles.error}>{errores.apellido}</Text>}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Edad"
+                    value={form.edad}
+                    onChangeText={valor => handleChange('edad', valor)}
+                    keyboardType="numeric"
+                />
+                {errores.edad && <Text style={styles.error}>{errores.edad}</Text>}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Descripción"
+                    value={form.descripcion}
+                    onChangeText={valor => handleChange('descripcion', valor)}
+                    multiline
+                />
 
-            {/* Sección de Ubicación */}
-            <View style={styles.locationSection}>
-                <Text style={styles.locationTitle}>📍 Ubicación</Text>
+                {/* Sección de Ubicación */}
+                <View style={styles.locationSection}>
+                    <Text style={styles.locationTitle}>📍 Ubicación</Text>
 
-                <View style={styles.coordinatesContainer}>
-                    <View style={styles.coordinateRow}>
-                        <Text style={styles.coordinateLabel}>Latitud:</Text>
-                        <TextInput
-                            style={styles.coordinateInput}
-                            placeholder="Latitud"
-                            value={form.latitud}
-                            onChangeText={valor => handleChange('latitud', valor)}
-                            keyboardType="numeric"
-                            editable={!watchingLocation}
-                        />
-                    </View>
-
-                    <View style={styles.coordinateRow}>
-                        <Text style={styles.coordinateLabel}>Longitud:</Text>
-                        <TextInput
-                            style={styles.coordinateInput}
-                            placeholder="Longitud"
-                            value={form.longitud}
-                            onChangeText={valor => handleChange('longitud', valor)}
-                            keyboardType="numeric"
-                            editable={!watchingLocation}
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.locationButtons}>
-                    <TouchableOpacity style={styles.locationButton} onPress={obtenerUbicacionActual}>
-                        <Text style={styles.locationButtonText}>📍 Obtener Ubicación</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.locationButton, watchingLocation ? styles.stopButton : styles.startButton]}
-                        onPress={toggleSeguimientoUbicacion}
-                    >
-                        <Text style={styles.locationButtonText}>
-                            {watchingLocation ? '⏹️ Detener Seguimiento' : '🎯 Seguir Ubicación'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Mapa con marcador de ubicación */}
-                <View style={styles.mapContainer}>
-                    <Text style={styles.mapTitle}>🗺️ Mapa de ubicación</Text>
-                    {region ? (
-                        <MapView style={styles.map} region={region}>
-                            <Marker
-                                coordinate={{
-                                    latitude: region.latitude,
-                                    longitude: region.longitude
-                                }}
-                                title="Mi ubicación"
-                                description={`Lat: ${region.latitude.toFixed(6)}, Lon: ${region.longitude.toFixed(6)}`}
+                    <View style={styles.coordinatesContainer}>
+                        <View style={styles.coordinateRow}>
+                            <Text style={styles.coordinateLabel}>Latitud:</Text>
+                            <TextInput
+                                style={styles.coordinateInput}
+                                placeholder="Latitud"
+                                value={form.latitud}
+                                onChangeText={valor => handleChange('latitud', valor)}
+                                keyboardType="numeric"
+                                editable={!watchingLocation}
                             />
-                        </MapView>
-                    ) : (
-                        <View style={styles.mapPlaceholder}>
-                            <ActivityIndicator size="large" color="#007BFF" />
-                            <Text style={styles.mapLoadingText}>Cargando mapa...</Text>
+                        </View>
+
+                        <View style={styles.coordinateRow}>
+                            <Text style={styles.coordinateLabel}>Longitud:</Text>
+                            <TextInput
+                                style={styles.coordinateInput}
+                                placeholder="Longitud"
+                                value={form.longitud}
+                                onChangeText={valor => handleChange('longitud', valor)}
+                                keyboardType="numeric"
+                                editable={!watchingLocation}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.locationButtons}>
+                        <TouchableOpacity style={styles.locationButton} onPress={obtenerUbicacionActual}>
+                            <Text style={styles.locationButtonText}>📍 Obtener Ubicación</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.locationButton, watchingLocation ? styles.stopButton : styles.startButton]}
+                            onPress={toggleSeguimientoUbicacion}
+                        >
+                            <Text style={styles.locationButtonText}>
+                                {watchingLocation ? '⏹️ Detener Seguimiento' : '🎯 Seguir Ubicación'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Mapa con marcador de ubicación */}
+                    <View style={styles.mapContainer}>
+                        <Text style={styles.mapTitle}>🗺️ Mapa de ubicación</Text>
+                        {region ? (
+                            <MapView style={styles.map} region={region}>
+                                <Marker
+                                    coordinate={{
+                                        latitude: region.latitude,
+                                        longitude: region.longitude
+                                    }}
+                                    title="Mi ubicación"
+                                    description={`Lat: ${region.latitude.toFixed(6)}, Lon: ${region.longitude.toFixed(6)}`}
+                                />
+                            </MapView>
+                        ) : (
+                            <View style={styles.mapPlaceholder}>
+                                <ActivityIndicator size="large" color="#007BFF" />
+                                <Text style={styles.mapLoadingText}>Cargando mapa...</Text>
+                            </View>
+                        )}
+                    </View>
+                </View>
+                <View style={styles.buttonContainer}>
+                    <View style={styles.buttonWrapper}>
+                        <Button title="Guardar Cambios" color="#007BFF" onPress={handleSave} disabled={!hayCambios} />
+                    </View>
+                    {perfilExiste && (
+                        <View style={styles.buttonWrapper}>
+                            <Button title="Borrar Perfil" color="#dc3545" onPress={handleDelete} />
                         </View>
                     )}
                 </View>
             </View>
-            <View style={styles.buttonContainer}>
-                <View style={styles.buttonWrapper}>
-                    <Button title="Guardar Cambios" color="#007BFF" onPress={handleSave} disabled={!hayCambios} />
-                </View>
-                {perfilExiste && (
-                    <View style={styles.buttonWrapper}>
-                        <Button title="Borrar Perfil" color="#dc3545" onPress={handleDelete} />
-                    </View>
-                )}
-            </View>
-        </View>
+        </ScrollView>
     );
 }
 
